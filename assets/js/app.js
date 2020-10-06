@@ -32,13 +32,16 @@ var chosenXAxis = "Obesity";
 var chosenYAxis = "Poverty";
 
 // function used for updating x-scale var upon click on axis label
-function xScale(Data, chosenXAxis) {
+function Scale(Data, chosenXAxis) {
   // create scales
   var xLinearScale = d3.scaleLinear()
     .domain([d3.min(Data, d => d[chosenXAxis]) * 0.8,
       d3.max(Data, d => d[chosenXAxis]) * 1.2])
     .range([0, width]);
-  return xLinearScale;
+  var yLinearScale = d3.scaleLinear()
+    .domain([d3.min(Data, d => d[chosenYAxis]) - 1, d3.max(Data, d => d[chosenYAxis])])
+    .range([height, 0]);
+  return xLinearScale, yLinearScale;
 }
 
 // function used for updating xAxis var upon click on axis label
@@ -47,7 +50,11 @@ function renderAxes(newXScale, xAxis) {
   xAxis.transition()
     .duration(1000)
     .call(bottomAxis);
-  return xAxis;
+  var leftAxis = d3.axisLeft(newYScale);
+  yAxis.transition()
+    .duration(1000)
+    .call(leftAxis);
+  return xAxis, yAxis;
 }
 
 // function used for updating circles group with a transition to new circles
@@ -64,7 +71,7 @@ function updateToolTip(chosenXAxis, circlesGroup) {
   if (chosenXAxis === "obesity") {
     label = "Obesity (%):";
   }
-  if (chosenXAxis === "healthcare") {
+  else if (chosenXAxis === "healthcare") {
     label = "Lacks Healthcare (%):";
   }
   else {
@@ -105,12 +112,15 @@ d3.csv('assets/data/data.csv').then(function(Data) {
 
     // Step 2: Create scale functions
     // ==============================
+    var xLinearScale = Scale(Data, chosenXAxis);
+    var yLinearScale = Scale(Data, chosenYAxis);
+
     var xLinearScale = d3.scaleLinear()
-      .domain([d3.min(Data, d => d.obesity) - 1, d3.max(Data, d => d.obesity)])
+      .domain([d3.min(Data, d => d[chosenXAxis]) * 0.8, d3.max(Data, d => d[chosenXAxis])])
       .range([0, width]);
 
     var yLinearScale = d3.scaleLinear()
-      .domain([d3.min(Data, d => d.poverty) - 1, d3.max(Data, d => d.poverty)])
+      .domain([d3.min(Data, d => d[chosenYAxis]) - 1, d3.max(Data, d => d[chosenYAxis])])
       .range([height, 0]);
 
     // Step 3: Create axis functions
@@ -120,11 +130,14 @@ d3.csv('assets/data/data.csv').then(function(Data) {
 
     // Step 4: Append Axes to the chart
     // ==============================
-    chartGroup.append("g")
-      .attr("transform", `translate(0, ${height})`)
+    var xAxis = chartGroup.append("g")
+      .classed("x-axis", true)
+      .attr("transform", `translate(0, ${width})`)
       .call(bottomAxis);
 
-    chartGroup.append("g")
+    var yAxis = chartGroup.append("g")
+      .classed("y-axis", true)
+      .attr("transform", `translate(0, ${height})`)
       .call(leftAxis);
 
     // Step 5: Create Circles
@@ -133,9 +146,9 @@ d3.csv('assets/data/data.csv').then(function(Data) {
     .data(Data)
     .enter()
     .append("circle")
-    .attr("cx", d => xLinearScale(d.obesity))
-    .attr("cy", d => yLinearScale(d.poverty))
-    .attr("r", "10")
+    .attr("cx", d => xLinearScale(d[chosenXAxis]))
+    .attr("cy", d => yLinearScale(d[chosenYAxis]))
+    .attr("r", 10)
     .attr("fill", "blue")
     .attr("opacity", ".5");
 
