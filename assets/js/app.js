@@ -1,13 +1,13 @@
 // @TODO: YOUR CODE HERE!
 
 // Define SVG area dimensions
-var svgWidth = window.innerWidth * .8;
+var svgWidth = window.innerWidth * 0.75;
 var svgHeight = window.innerHeight / 2;
 
 // Define the chart's margins as an object
 var margin = {
   top: 20,
-  right: 40,
+  right: 20,
   bottom: 80,
   left: 100
 };
@@ -167,8 +167,8 @@ d3.csv('assets/data/data.csv').then(function(Data) {
       .attr("cx", d => xLinearScale(d[chosenXAxis]))
       .attr("cy", d => yLinearScale(d[chosenYAxis]))
       .attr("r", 12)
-      .attr("fill", "blue")
-      .attr("opacity", ".6");
+      .attr("fill", "purple")
+      .attr("opacity", ".4");
 
     var txtGroup = cTxtGroup.append("text")
       .text(Data => Data.abbr)
